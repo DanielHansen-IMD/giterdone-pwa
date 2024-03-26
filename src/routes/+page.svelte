@@ -37,14 +37,23 @@
           urgent = false; 
           someday = false;
      }
-          function removeThis(index) {
+     function removeThis(index) {
           $todoList.splice(index, 1);
           $todoList = $todoList;
+          updateList();
+     }
+     function removeThisSomeday(index) {
+          somedayList.splice(index, 1);
+          somedayList = somedayList;
           updateList();
      }
      function clearDone() {
           $todoList = $todoList.filter(item => !item.done)
           updateList();
+     }
+     function clearAll() {
+          $todoList = [];
+          localStorage.clear();
      }
 </script>
 
@@ -57,7 +66,7 @@
      <label for="urgent">Urgent</label>
      <input type="checkbox" name="someday" id="someday" bind:checked={someday}>
      <label for="someday">Some Day</label>
-<div>
+     <div>
           <button type="submit">Add</button>
      </div>
 </form>
@@ -77,12 +86,19 @@
      <h2>Someday</h2>
      <ul>
           {#each somedayList as item, index}
-               <li>{item.text}</li>
+               <li>
+                    <input type="checkbox" bind:checked={item.done} on:change={updateList}>
+                    <span class:done={item.done} >{item.text}</span>
+                    <span on:click={() => removeThisSomeday(index)} class="remove" role="button" tabindex="0">&times;</span>
+               </li>
           {/each}
      </ul>
 {/if}
 {#if isDone.length > 0}
 <button on:click={clearDone}>Remove Done</button>
+{/if}
+{#if $todoList.length > 0}
+<button on:click={clearAll}>Remove All</button>
 {/if}
 
 <style>
