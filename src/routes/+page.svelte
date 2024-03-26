@@ -4,19 +4,19 @@
      let todoItem = '';
      let storedList, urgent, someday;
      let todoList = writable([]);
-     $: isDone = [];
-     $: somedayList = [];
+
      if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
           storedList = localStorage.getItem('storedList');
           if(storedList) {
                $todoList = (JSON.parse(storedList));
           }
      }
-
+     $: isDone = $todoList.filter(item => item.done);;
+     $: somedayList = $todoList.filter(item => item.someday);
+     console.log(somedayList);
      function updateList() {
           return storedList = localStorage.setItem('storedList', JSON.stringify($todoList));
      }
-
 
      function addToArray() {
           if (todoItem == '') {
