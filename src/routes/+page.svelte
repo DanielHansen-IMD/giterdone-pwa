@@ -1,29 +1,50 @@
 <script>
      import '../style.css';
+     import { writable } from 'svelte/store';
      let todoItem = '';
-     let urgent, someday;
-     let todoList = [];
-     $: isDone = todoList.filter(item => item.done);
-     $: somedayList = todoList.filter(item => item.someday)
+     let storedList, urgent, someday;
+     let todoList = writable([]);
+     $: isDone = [];
+     $: somedayList = [];
+     if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+          storedList = localStorage.getItem('storedList');
+          if(storedList) {
+               $todoList = (JSON.parse(storedList));
+          }
+     }
+
+     function updateList() {
+          return storedList = localStorage.setItem('storedList', JSON.stringify($todoList));
+     }
+
+
      function addToArray() {
           if (todoItem == '') {
                return;
           }
-          todoList = [...todoList, {
+          $todoList = [...$todoList, {
                text: todoItem,
                done: false,
                urgent: urgent,
                someday: someday
           }];
-          console.log(todoList);
+          isDone = $todoList.filter(item => item.done);
+          somedayList = $todoList.filter(item => item.someday);
+          console.log(somedayList);
+          //console.log($todoList);
+          updateList();
           todoItem = '';
+          urgent = false; 
+          someday = false;
      }
-     function removeThis(index) {
-          todoList.splice(index, 1);
-          todoList = todoList;
+          function removeThis(index) {
+          $todoList.splice(index, 1);
+          $todoList = $todoList;
+          updateList();
      }
      function clearDone() {
-          todoList = todoList.filter(item => !item.done)
+          $todoList = $todoList.filter(item => !item.done)
+          updateList();
      }
 </script>
 
@@ -36,21 +57,22 @@
      <label for="urgent">Urgent</label>
      <input type="checkbox" name="someday" id="someday" bind:checked={someday}>
      <label for="someday">Some Day</label>
-     <div>
+<div>
           <button type="submit">Add</button>
      </div>
 </form>
 
 <ul>
-     {#each todoList as item, index}
+     {#each $todoList as item, index}
           <li>
-               <input type="checkbox" bind:checked={item.done}>
+               <input type="checkbox" bind:checked={item.done} on:change={updateList}>
 
                <span class:done={item.done} >{item.text}</span>
                <span on:click={() => removeThis(index)} class="remove" role="button" tabindex="0">&times;</span>
           </li>
      {/each}
 </ul>
+
 {#if somedayList.length > 0}
      <h2>Someday</h2>
      <ul>
