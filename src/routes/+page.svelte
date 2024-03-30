@@ -2,7 +2,7 @@
      import '../style.css';
      import { writable } from 'svelte/store';
      let todoItem = '';
-     let storedList, urgent, someday;
+     let storedList;
      let todoList = writable([]);
 
      if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
@@ -12,8 +12,6 @@
           }
      }
      $: isDone = $todoList.filter(item => item.done);;
-     $: somedayList = $todoList.filter(item => item.someday);
-     console.log(somedayList);
      function updateList() {
           return storedList = localStorage.setItem('storedList', JSON.stringify($todoList));
      }
@@ -24,27 +22,15 @@
           }
           $todoList = [...$todoList, {
                text: todoItem,
-               done: false,
-               urgent: urgent,
-               someday: someday
+               done: false
           }];
           isDone = $todoList.filter(item => item.done);
-          somedayList = $todoList.filter(item => item.someday);
-          console.log(somedayList);
-          //console.log($todoList);
           updateList();
           todoItem = '';
-          urgent = false; 
-          someday = false;
      }
      function removeThis(index) {
           $todoList.splice(index, 1);
           $todoList = $todoList;
-          updateList();
-     }
-     function removeThisSomeday(index) {
-          somedayList.splice(index, 1);
-          somedayList = somedayList;
           updateList();
      }
      function clearDone() {
@@ -56,64 +42,152 @@
           localStorage.clear();
      }
 </script>
-
-<h1>Todo!</h1>
-
-<form on:submit|preventDefault={addToArray}>
-     <input type="text" bind:value={todoItem}>
-     <p>Choose Category:</p>
-     <input type="checkbox" name="urgent" id="urgent" bind:checked={urgent}>
-     <label for="urgent">Urgent</label>
-     <input type="checkbox" name="someday" id="someday" bind:checked={someday}>
-     <label for="someday">Some Day</label>
-     <div>
+<div class="frame">
+     <h1>Giterdone</h1>
+     <form on:submit|preventDefault={addToArray}>
+          <input type="text" bind:value={todoItem}>
           <button type="submit">Add</button>
-     </div>
-</form>
-
-<ul>
-     {#each $todoList as item, index}
-          <li>
-               <input type="checkbox" bind:checked={item.done} on:change={updateList}>
-
-               <span class:done={item.done} >{item.text}</span>
-               <span on:click={() => removeThis(index)} class="remove" role="button" tabindex="0">&times;</span>
-          </li>
-     {/each}
-</ul>
-
-{#if somedayList.length > 0}
-     <h2>Someday</h2>
+     </form>
      <ul>
-          {#each somedayList as item, index}
-               <li>
+          {#each $todoList as item, index}
+               <li class:done={item.done} >
                     <input type="checkbox" bind:checked={item.done} on:change={updateList}>
-                    <span class:done={item.done} >{item.text}</span>
-                    <span on:click={() => removeThisSomeday(index)} class="remove" role="button" tabindex="0">&times;</span>
+                    <span class="text">{item.text}</span>
+                    <span on:click={() => removeThis(index)} class="remove" role="button" tabindex="0">&times;</span>
                </li>
           {/each}
      </ul>
-{/if}
-{#if isDone.length > 0}
-<button on:click={clearDone}>Remove Done</button>
-{/if}
-{#if $todoList.length > 0}
-<button on:click={clearAll}>Remove All</button>
-{/if}
+     <div class="button-group">
+          {#if $todoList.length > 0}
+          <button class="clear-list" on:click={clearAll}>Remove All</button>
+          {/if}
+          {#if isDone.length > 0}
+          <button on:click={clearDone}>Remove Done</button>
+          {/if}
 
+     </div>
+</div>
 <style>
+     h1 {
+          font-weight: 300;
+          color: #f8f8f8;
+          font-size: 4.5rem;
+          margin: 0;     
+          letter-spacing: -0.06em;
+          line-height: 1;
+          margin-bottom: 0.7em;
+     }
+     input, button {
+          font-family: sans-serif;
+          font-family: "Work Sans", sans-serif;
+     }
      ul {
           list-style: none;
+          padding: 0;
+     }
+     .frame {
+          max-width: 600px;
+          margin: 5vw auto;
+     }
+     .text {
+          font-weight: 600;
+          margin-left: 2vw;
+     }
+     form {
+          display: flex;
+     }
+     form input[type="text"] {
+          padding: 1em;
+          font-size: 1.2rem;
+          border: none;
+          border-top-left-radius: 50px;
+          border-bottom-left-radius: 50px;
+          width: 80%;
+     }
+     form button {
+          width: 20%;
+          border: none;
+          border-top-left-radius: 0;
+          border-top-right-radius: 50px;
+          border-bottom-left-radius: 0;
+          border-bottom-right-radius: 50px;
+          font-size: 1.2em;
+          color: #f8f8f8;
+          background-color:rgb(20, 153, 95);
      }
      li {
           font-size: 1.3rem;
+          display: block;
+          width: 100%;
+          background-color: rgb(243, 201, 207); 
+          margin-bottom: 4px;
+          padding: 2.5vw;
+          border-radius: 2em;
+          border-top-right-radius:0px;
+          position: relative;
+          display: flex;
+          align-items: center;
+          box-sizing: border-box;
      }
-     .done {
-          color: #ccc;
+     li input[type="checkbox"] {
+          width: 2em;
+          height: 2rem;
+          accent-color: rgb(20, 153, 95);
+     }
+     li.done {
+          opacity: 0.5;
+     }
+     .done .text {
+          color: #777;
           text-decoration: line-through;
+
      }
      .remove {
           color: darkred;
           cursor: pointer;
+          position: absolute;
+          right: 12px;
+          top: 8px;
+          line-height: 1;
+          font-size: 2rem;
+     }
+     .button-group {
+          display: flex;
+          justify-content: flex-end;
+     }
+     .button-group button {
+          font-size: 1.2rem;
+          background-color: rgb(20, 153, 95);
+          color: #f8f8f8;
+          padding: 0.8em 1.4em;
+          border: none;
+          border-radius: 50px;
+          margin-left: 0.7em;
+          cursor: pointer;
+     }
+     .button-group .clear-list {
+          background-color: #999;
+     }
+     @media screen and (max-width: 550px) {
+          input[type="text"], form button, .button-group button, li {
+               font-size: 1em;
+          }
+          form input[type="text"] {
+               border-top-left-radius: 20px;
+               border-bottom-left-radius: 20px;
+          }
+          form button {
+               border-top-right-radius: 20px;
+               border-bottom-right-radius: 20px;
+          }
+          li {
+               padding: 4vw;
+               border-radius: 20px;
+               border-top-right-radius: 0;
+          }
+          .remove {
+               top: 5px;
+               right: 10px;
+          }
      }
 </style>
